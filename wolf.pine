@@ -15,6 +15,7 @@
 // strength support (hunter) provides a baseline to evaluate if the trend strength is adequate for
 // continuation. Signals are generated based on these calculations to indicate potential trend changes.
 
+import TradingView/ta/7
 import mentalRock19315/Slope_TK/1 as TK
 
 //@version=5
@@ -42,16 +43,18 @@ hunter = ta.sma(wolf, lead) / lead
 plot(wolf, color = #0c9982, style = plot.style_area, title = "Wolf")
 plot(sheep, color = color.rgb(242, 41, 69, 40), style = plot.style_area, title = "Sheep")
 
-// Only draw the signal if trend strength dropped under the strength support.
-if not (ta.crossunder(hunter, wolf))
-    hunter := na
-
-//plot(ta.change(diff, lead) + close, force_overlay = true)
-//plot(ta.atr(lead) + close, force_overlay = true, color = color.orange)
-//plot(TK.slope(ta.change(close, lead), lead) + close, color = color.green, force_overlay = true)
-
 // This code came to me in a dream, take its effectiveness with a grain of salt.
-gap = ta.change(diff, lead) - TK.slope(ta.change(close, lead), lead)
-bullish = ta.atr(lead) > TK.slope(ta.change(close, lead), lead)
-plot(gap, color = color.orange)
-plotshape(hunter, style = shape.circle, force_overlay = true, size = size.tiny, color = bullish ? #f22945 : #0c9982)
+squeeze = ta.change(diff, lead) - ta.change(close, lead)
+fit = ta.sma(ta.change(diff, lead) - ta.change(close, lead), lag)
+bear = (squeeze > 0 and squeeze <= 0.3) or (squeeze < 0 and squeeze >= -0.3) or fit < 0
+signal = 0
+
+// Only draw the signal if trend strength dropped under the strength support.
+if (ta.crossunder(hunter, wolf))
+    signal := 1
+
+if (signal and fit < 0)
+    signal := 2
+    
+plotshape(signal == 1 ? 1 : na, style = shape.circle, force_overlay = true, size = size.tiny, color = bear ? #f22945 : #0c9982)
+plotshape(signal == 2 ? 1 : na, style = shape.diamond, force_overlay = true, size = size.tiny, color = bear ? #f22945 : #0c9982)
