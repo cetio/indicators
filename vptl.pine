@@ -1,0 +1,15 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © cetios
+
+import TradingView/ta/7
+
+//@version=5
+indicator("Volume/Price Trend Line", "VPTL", overlay = true)
+
+color = input.color(color.maroon, "Trend Color")
+lag = input.int(200, "Lagging Period")
+
+vol = math.pow((volume / math.sum(volume, lag)) * lag, 2)
+trend = ta.swma(-vol) + ta.sma(close, lag / 2)
+
+plot(trend, color = color)
